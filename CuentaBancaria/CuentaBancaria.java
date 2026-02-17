@@ -48,17 +48,13 @@ public class CuentaBancaria {
   /**
    * @param        saldo
    */
-  public void CuentaBancaria(double saldo)
+  public CuentaBancaria(double saldo)
   {
+    this.saldo = saldo;
   }
 
 
-  /**
-   * @return       double
-   */
-  public double getSaldo()
-  {
-  }
+  
 
 
   /**
@@ -66,6 +62,7 @@ public class CuentaBancaria {
    */
   public void depositar(double saldo)
   {
+  this.saldo = this.saldo + saldo;
   }
 
 
@@ -74,6 +71,7 @@ public class CuentaBancaria {
    */
   public void retirar(double saldo)
   {
+  this.saldo = this.saldo - saldo;
   }
 
 
