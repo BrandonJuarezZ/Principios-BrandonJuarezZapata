@@ -13,7 +13,9 @@ public class Perro {
   //
   // Constructors
   //
-  public Perro () { };
+  public Perro (String nombre) {
+    super(nombre);
+  };
   
   //
   // Methods
@@ -28,18 +30,14 @@ public class Perro {
   // Other methods
   //
 
-  /**
-   * @param        nombre
-   */
-  public void Perro(String nombre)
-  {
-  }
+ 
 
 
   /**
    */
   public void mover()
   {
+  System.out.println("El perro se mueve");
   }
 
 
@@ -47,6 +45,7 @@ public class Perro {
    */
   public void hacerSonido()
   {
+  System.out.println("Guau!");
   }
 
 

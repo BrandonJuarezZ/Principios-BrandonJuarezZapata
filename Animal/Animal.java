@@ -14,7 +14,9 @@ public class Animal {
   //
   // Constructors
   //
-  public Animal () { };
+  public Animal (String nombre) {
+    this.nombre = nombre;
+  };
   
   //
   // Methods

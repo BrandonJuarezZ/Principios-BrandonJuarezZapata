@@ -13,7 +13,9 @@ public class Gato {
   //
   // Constructors
   //
-  public Gato () { };
+  public Gato (String nombre) {
+    super(nombre);
+  };
   
   //
   // Methods
@@ -28,18 +30,14 @@ public class Gato {
   // Other methods
   //
 
-  /**
-   * @param        nombre
-   */
-  public void Gato(String nombre)
-  {
-  }
+ 
 
 
   /**
    */
   public void mover()
   {
+  System.out.println("El gato se mueve");
   }
 
 
@@ -47,6 +45,7 @@ public class Gato {
    */
   public void hacerSonido()
   {
+  System.out.println("Miau!");
   }
 
 
