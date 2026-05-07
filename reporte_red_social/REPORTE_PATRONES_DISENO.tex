@@ -1,0 +1,229 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+
+\geometry{margin=2.5cm}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  pdftitle={Reporte de Patrones de Diseño},
+  pdfauthor={Red Social de Personajes de Videojuegos}
+}
+
+\title{Reporte de Patrones de Diseño\\Red Social de Personajes de Videojuegos}
+\author{Brandon Juárez Zapata}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+Este reporte explica los patrones de diseño que se usaron en el proyecto \textit{Personajes Videojuegos}. El proyecto tiene dos partes: la aplicación móvil hecha con Flutter (lo que el usuario ve) y el servidor hecho con Spring Boot (la parte que procesa la información). Para cada solución aplicada se explica: qué es y para qué sirve, en qué parte del código se usó, y qué ventaja nos da.
+
+
+Las soluciones que se mencionan aquí se llaman ``patrones de diseño''. Son recetas conocidas que los programadores usan para resolver problemas comunes de forma ordenada y reutilizable.
+
+\section{Resumen de las soluciones usadas}
+La siguiente tabla muestra de un vistazo todas las soluciones aplicadas, en qué parte del proyecto se usaron y para qué sirvieron:
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{4.5cm}|>{\raggedright\arraybackslash}p{3cm}|>{\raggedright\arraybackslash}p{6cm}|}
+\hline
+\textbf{Solución (Patrón)} & \textbf{¿Dónde se usó?} & \textbf{¿Para qué sirvió?} \\
+\hline
+Singleton & App móvil y servidor & Garantizar que ciertos servicios existan una sola vez en toda la app \\
+\hline
+Service Locator & App móvil & Obtener servicios desde un punto central sin depender de clases específicas \\
+\hline
+Repository & App móvil y servidor & Separar la forma de guardar y leer datos del resto del código \\
+\hline
+Factory Method & App móvil y servidor & Crear objetos de forma controlada y centralizada \\
+\hline
+Builder & App móvil & Construir objetos complejos paso a paso de manera legible \\
+\hline
+Observer & App móvil & Notificar automáticamente cuando algo cambia en la app \\
+\hline
+State & App móvil & Controlar en qué estado se encuentra la app (cargando, listo, error, etc.) \\
+\hline
+Strategy & App móvil y servidor & Elegir cómo procesar algo según la situación \\
+\hline
+Command & App móvil & Encapsular acciones del usuario como dar ``me gusta'' o ``no me gusta'' \\
+\hline
+Template Method & App móvil & Reutilizar la misma estructura de pasos en operaciones similares \\
+\hline
+Specification / Query Object & App móvil & Hacer búsquedas con criterios específicos de forma reutilizable \\
+\hline
+DTO (objeto de transferencia) & Servidor & Enviar solo la información necesaria al cliente, sin datos internos \\
+\hline
+\end{longtable}
+
+\section{Patrones usados en la app móvil (Flutter)}
+
+\subsection{Singleton — Una sola instancia}
+\textbf{¿Dónde se usa?}
+\begin{itemize}[leftmargin=1.2cm]
+  \item Archivo de autenticación: \texttt{AuthService.dart}
+  \item Archivo de personajes: \texttt{PersonajeService.dart}
+  \item Coordinador de servicios: \texttt{service\_locator.dart}
+  \item Estado general de la app: \texttt{app\_state.dart}
+\end{itemize}
+
+\textbf{¿Cómo funciona?} Cuando la app arranca, crea una sola copia de ciertos servicios importantes (como el de autenticación o el de datos de personajes). Si alguien pide ese servicio más tarde, siempre recibe la misma copia, nunca una nueva.
+
+\textbf{¿Por qué es útil?} Evita que se creen varias copias del mismo servicio al mismo tiempo, lo cual podría causar errores o consumir memoria innecesaria.
+
+\subsection{Service Locator — El directorio de servicios}
+\textbf{¿Dónde se usa?} Archivo: \texttt{service\_locator.dart}
+
+\textbf{¿Cómo funciona?} Es como una agenda o directorio: registra todos los servicios disponibles y cuando una pantalla los necesita, simplemente los pide por nombre sin saber cómo están construidos por dentro.
+
+\textbf{¿Por qué es útil?} Las pantallas y componentes visuales no dependen directamente de los servicios concretos. Esto facilita cambiar un servicio real por uno de prueba sin tocar el código de las pantallas.
+
+\subsection{Repository — Separar cómo se guardan los datos}
+\textbf{¿Dónde se usa?}
+\begin{itemize}[leftmargin=1.2cm]
+  \item Contrato (interfaz): \texttt{PersonajeRepository.dart}
+  \item Implementación real (conectada al servidor): \texttt{PersonajeService.dart}
+  \item Implementación de prueba (datos simulados): \texttt{PersonajeServiceMock.dart}
+\end{itemize}
+
+\textbf{¿Cómo funciona?} La app define un ``contrato'' que dice qué operaciones se pueden hacer con los personajes (obtener, crear, editar, eliminar). Hay una versión que realmente habla con el servidor y otra que usa datos de prueba. La interfaz visual siempre habla con el contrato, no con la versión específica.
+
+\textbf{¿Por qué es útil?} Hace que sea muy fácil probar la app sin necesidad de conectarse a internet, y permite cambiar la fuente de datos sin modificar las pantallas.
+
+\subsection{Factory Method — Fábrica de objetos}
+\textbf{¿Dónde se usa?}
+\begin{itemize}[leftmargin=1.2cm]
+  \item Método \texttt{Personaje.fromJson(...)}
+  \item Método \texttt{PersonajeBuilder.fromJson(...)}
+  \item Servicios que convierten respuestas del servidor en objetos de la app
+\end{itemize}
+
+\textbf{¿Cómo funciona?} Cuando el servidor devuelve información en formato JSON (texto estructurado), existe un método especial que lee ese texto y crea el objeto correcto de la app automáticamente.
+
+\textbf{¿Por qué es útil?} Toda la lógica de ``leer datos del servidor y convertirlos'' está en un solo lugar. Si el formato cambia, solo hay que modificar ese método.
+
+\subsection{Builder — Constructor paso a paso}
+\textbf{¿Dónde se usa?} Archivo: \texttt{personaje\_builder.dart}
+
+\textbf{¿Cómo funciona?} En lugar de crear un personaje en una sola línea complicada, se usa un constructor que va agregando la información poco a poco: primero el nombre, luego el videojuego, luego la imagen, etc.
+
+\textbf{¿Por qué es útil?} Hace que el código sea más fácil de leer y evita errores al crear objetos con muchos campos.
+
+\subsection{Observer + State — Notificaciones y estados de la app}
+\textbf{¿Dónde se usa?} Archivo: \texttt{app\_state.dart}
+
+\textbf{¿Cómo funciona?} La app puede estar en distintos estados: iniciando, cargando, con sesión activa, sin sesión, con error, etc. Cuando el estado cambia, todas las pantallas que estaban ``escuchando'' se actualizan solas.
+
+\textbf{¿Por qué es útil?} El comportamiento de la app es predecible y ordenado. No hay que actualizar cada pantalla manualmente: se actualizan solas cuando algo importante cambia.
+
+\subsection{Strategy — Elegir cómo procesar según la situación}
+\textbf{¿Dónde se usa?} Método \texttt{\_parsePersonajeResponse(...)} en \texttt{PersonajeService}.
+
+\textbf{¿Cómo funciona?} A veces el servidor devuelve los datos de una forma, a veces de otra. Este patrón revisa qué formato llegó y elige automáticamente cómo procesarlo:
+\begin{itemize}[leftmargin=1.2cm]
+  \item Si la respuesta viene como lista paginada (con la clave \texttt{content}), la procesa de una manera.
+  \item Si viene como lista directa, la procesa de otra.
+\end{itemize}
+
+\textbf{¿Por qué es útil?} La app funciona correctamente aunque el servidor cambie ligeramente cómo devuelve los datos.
+
+\subsection{Command — Encapsular acciones del usuario}
+\textbf{¿Dónde se usa?} Acciones \texttt{likePersonaje(...)} y \texttt{dislikePersonaje(...)}.
+
+\textbf{¿Cómo funciona?} Cada vez que el usuario presiona ``me gusta'' o ``no me gusta'', esa acción queda encapsulada en una función específica con un solo objetivo.
+
+\textbf{¿Por qué es útil?} Es más fácil rastrear qué hizo el usuario y manejar lo que sucede después (actualizar contador, mostrar mensaje, etc.).
+
+\subsection{Template Method — Estructura común para operaciones similares}
+\textbf{¿Dónde se usa?} Operaciones de crear, actualizar y eliminar personajes.
+
+\textbf{¿Cómo funciona?} Todas las operaciones siguen los mismos pasos en el mismo orden:
+\begin{itemize}[leftmargin=1.2cm]
+  \item Preparar la petición.
+  \item Enviarla al servidor.
+  \item Verificar si la respuesta fue exitosa.
+  \item Convertir la respuesta en objetos de la app.
+  \item Manejar cualquier error que ocurra.
+\end{itemize}
+
+\textbf{¿Por qué es útil?} Todos los servicios de red funcionan de la misma manera, lo que hace el código más fácil de entender y mantener.
+
+\subsection{Specification / Query Object — Búsquedas específicas}
+\textbf{¿Dónde se usa?}
+\begin{itemize}[leftmargin=1.2cm]
+  \item \texttt{getPersonajeById(int id)} — buscar un personaje por su número de identificación.
+  \item \texttt{searchByVideojuego(String videojuego)} — buscar personajes por nombre de videojuego.
+\end{itemize}
+
+\textbf{¿Por qué es útil?} Cada tipo de búsqueda está claramente definida y puede reutilizarse en varios lugares de la app.
+
+\subsection{Value Object — Objetos que representan datos}
+\textbf{¿Dónde se usa?} Modelos \texttt{Personaje} y \texttt{Comentario}.
+
+\textbf{¿Cómo funciona?} Los modelos de la app representan exactamente lo que significan: un personaje tiene nombre, imagen, videojuego, etc. Se tratan como representaciones fijas de esa información.
+
+\textbf{¿Por qué es útil?} Reduce el riesgo de cambiar datos por accidente y hace que el código sea más claro sobre qué información se está manejando.
+
+
+
+\section{Patrones usados en el backend (Spring Boot)}
+
+\subsection{Repository con Spring Data JPA}
+\textbf{¿Dónde se usa?}
+\begin{itemize}[leftmargin=1.2cm]
+  \item \texttt{PersonajeRepository} (para personajes)
+  \item Repositorios de comentarios, usuarios y reacciones
+\end{itemize}
+
+\textbf{¿Cómo funciona?} Spring Boot ofrece herramientas que generan automáticamente las operaciones de base de datos más comunes (buscar, guardar, eliminar, listar). Solo hay que decirle qué tipo de dato manejar.
+
+\textbf{¿Por qué es útil?} Se escribe mucho menos código repetitivo. La lógica de guardar datos queda separada de la lógica de negocio de los controladores.
+
+
+\subsection{DTO — Objeto de transferencia de datos}
+\textbf{¿Dónde se usa?}
+\begin{itemize}[leftmargin=1.2cm]
+  \item \texttt{PersonajeResponseDTO.java} — datos de un personaje para enviar al cliente.
+  \item \texttt{ComentarioResponseDTO.java} — datos de un comentario.
+  \item \texttt{ReactionResponseDTO.java} — datos de una reacción (me gusta / no me gusta).
+\end{itemize}
+
+\textbf{¿Cómo funciona?} Cuando el servidor responde a la app, no envía la entidad completa de la base de datos. En cambio, crea un objeto limpio con solo la información que la app necesita, incluyendo campos calculados como el número de ``me gusta'' y si el usuario actual ya reaccionó.
+
+\textbf{¿Por qué es útil?} Las respuestas son más seguras, más ligeras y no exponen información interna de la base de datos.
+
+\subsection{Factory Method en el backend}
+\textbf{¿Dónde se usa?} Método \texttt{convertToDTO(Personaje personaje, Long userId)} en \texttt{CharacterController}.
+
+\textbf{¿Cómo funciona?} Este método toma un personaje de la base de datos y lo convierte en un DTO completo, calculando contadores y estados de reacción en ese momento.
+
+\textbf{¿Por qué es útil?} Toda la lógica de construcción de respuestas está en un solo lugar, lo que facilita mantener la consistencia entre todos los endpoints de la API.
+
+\subsection{Strategy en el backend — Cálculo de reacciones}
+\textbf{¿Dónde se usa?} Filtros aplicados en \texttt{CharacterController} para contar me gusta, no me gusta, y determinar si el usuario actual ya reaccionó.
+
+\textbf{¿Cómo funciona?} Se aplican diferentes reglas de cálculo según el tipo de reacción y si el usuario autenticado ya reaccionó previamente.
+
+\textbf{¿Por qué es útil?} La lógica de conteo está clara y separada, y puede ajustarse sin afectar el resto del controlador.
+
+
+
+\section{Conclusión}
+A lo largo del desarrollo del proyecto \textit{Red Social de Personajes de Videojuegos}, usar estas soluciones de programación demostró ser una buena decisión que mejoró la calidad del código y facilitó el trabajo del equipo. Contar con patrones como Singleton, Factory Method y Builder permitió crear objetos de forma ordenada y sin errores, mientras que Repository y Service Locator lograron que las pantallas, los servicios y el manejo de datos pudieran modificarse por separado sin que un cambio en una parte rompiera las demás. Esto que al principio puede parecer un detalle menor, en la práctica significó ahorrarse muchos dolores de cabeza durante el desarrollo.
+
+Los patrones relacionados con el comportamiento de la app, como Observer, State, Strategy y Command, aportaron claridad a situaciones que de otra forma habrían sido difíciles de controlar, como saber en qué estado se encuentra la app en cada momento o qué debe pasar exactamente cuando el usuario presiona ``me gusta'' o ``no me gusta''. De hecho, esas funciones fueron las que más problemas presentaron al principio, con errores en los contadores y en el formato de los datos. Gracias a tener el código bien organizado fue posible encontrar y corregir esos errores sin tener que reescribir todo desde cero.
+
+En el servidor, enviar al cliente solo la información necesaria mediante los DTOs, en lugar de mandar todos los datos internos de la base de datos, resolvió varios problemas de formato y dejó las respuestas mucho más limpias y seguras. En general, todas estas decisiones dejaron al proyecto en una posición mucho más cómoda para el futuro: agregar nuevas funciones, corregir errores o hacer pruebas es ahora una tarea más sencilla y menos riesgosa que al inicio, lo cual es exactamente el objetivo que se busca al aplicar buenas prácticas de programación desde el principio.
+
+En conjunto, el proyecto quedó mejor preparado para crecer y para ser probado en el futuro.
+
+\end{document}
